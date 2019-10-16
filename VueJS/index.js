@@ -1,7 +1,7 @@
 import List from './components/List.js'
 import ListItem from './components/ListItem.js'
 
-new Vue({
+var myApp = new Vue({
   el: '#app',
   data: {
     todos: [

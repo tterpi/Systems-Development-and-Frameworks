@@ -3,10 +3,12 @@ export default Vue.component('list', {
 	template: `
 		<ol>
 			<list-item
-				v-for="item in todos"
+				v-for="(item, index) in todos"
 				v-bind:todo="item"
 				v-bind:key="item.id"
-			></list-item>
+				v-on:deleteTodo="todos.splice(index, 1)"
+				v-on:saveTodo="todos[index].message = $event"
+			/>
 		</ol>
 		`
 })
