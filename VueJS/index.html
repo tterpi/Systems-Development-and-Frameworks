@@ -5,6 +5,9 @@
 <!-- render your list here -->
 	<list
 		v-bind:todos="todos"
+		v-on:add-todo="addTodo"
+		v-on:save-todo="saveTodo"
+		v-on:delete-todo="deleteTodo"
 	></list>
 </div>
 
