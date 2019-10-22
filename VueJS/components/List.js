@@ -1,14 +1,17 @@
 export default Vue.component('list', {
 	props: ['todos'],
 	template: `
-		<ol>
+		<div>
+		<ul>
 			<list-item
 				v-for="(item, index) in todos"
 				v-bind:todo="item"
 				v-bind:key="item.id"
-				v-on:deleteTodo="todos.splice(index, 1)"
-				v-on:saveTodo="todos[index].message = $event"
+				v-on:delete-todo="$emit('delete-todo',index)"
+				v-on:save-todo="$emit('save-todo',{index: index, message: $event})"
 			/>
-		</ol>
+		</ul>
+		<button v-on:click="$emit('add-todo')">Add todo</button>
+		</div>
 		`
 })
