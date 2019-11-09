@@ -3,7 +3,7 @@
 				<div v-if="displayTodo">
 					{{ todoString }}
 					<button v-on:click="displayTodo=false">Edit</button>
-					<button v-on:click="$emit('delete-todo')">Delete</button>
+					<button id="deleteButton" v-on:click="$emit('delete-todo')">Delete</button>
 				</div>
 				<div v-else>
 					<input placeholder="Enter todo" v-model="inputValue"/>
