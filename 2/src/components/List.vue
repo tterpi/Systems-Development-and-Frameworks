@@ -9,8 +9,8 @@
 				v-on:save-todo="$emit('save-todo',{index: index, message: $event})"
 			/>
 		</ul>
-		<button v-on:click="$emit('add-todo')">Add todo</button>
-		</div>
+		<button class="add-button" v-on:click="$emit('add-todo')">Add todo</button>
+	</div>
 </template>
 
 <script>
