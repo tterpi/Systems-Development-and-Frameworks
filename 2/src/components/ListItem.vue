@@ -2,13 +2,13 @@
 			<li>
 				<div v-if="displayTodo">
 					{{ todoString }}
-					<button v-on:click="displayTodo=false">Edit</button>
-					<button id="deleteButton" v-on:click="$emit('delete-todo')">Delete</button>
+					<button class="editButton" v-on:click="displayTodo=false">Edit</button>
+					<button class="deleteButton" v-on:click="$emit('delete-todo')">Delete</button>
 				</div>
 				<div v-else>
 					<input placeholder="Enter todo" v-model="inputValue"/>
-					<button v-on:click="saveTodo">Save</button>
-					<button v-on:click="displayTodo=true">Cancel</button>
+					<button class="saveButton" v-on:click="saveTodo">Save</button>
+					<button class="cancelButton" v-on:click="displayTodo=true">Cancel</button>
 				</div>
 			</li>
 </template>
