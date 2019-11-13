@@ -18,4 +18,11 @@ describe('List', () => {
 		const listItems = wrapper.findAll(ListItem);
 		expect(listItems.length).toBe(3);
 	})
+
+	it('Add a todo after add button was clicked', () => {
+		const addButton = wrapper.findAll(".add-button");
+		addButton.trigger("click");
+		const listItems = wrapper.findAll(ListItem);
+		expect(listItems.length).toBe(4);
+	})
 })
