@@ -23,7 +23,25 @@ const createAssigneeMutation = gql`
 		}
 	}
 `;
-	
+
+const updateTodoMutation = gql`
+	mutation updateTodo($id: ID, $message: String){
+		updateTodo(id:$id, message:$message){
+			id
+			message
+		}
+	}
+`;
+
+const getTodoQuery = gql`
+	query getTodo($id: ID!){
+		todo(id: $id){
+			id
+			message
+		}
+	}
+`;
+
 const deleteTodoMutation = gql`
 	mutation deleteTodo($id: ID){
 		deleteTodo(id: $id){
@@ -70,6 +88,33 @@ it('creates a new todo', async ()=>{
 		}
 	});
 });
+
+it('updates a todo', async ()=>{
+	const result = await mutate(
+	{
+		mutation: updateTodoMutation,
+		variables: {id: "2", message: "color me surprised"}
+	}
+	);
+	
+	expect(result.data).toMatchObject({
+		updateTodo:
+		{
+			id: "2",
+			message: "color me surprised"
+		}
+	});
+})
+
+it('gets a single updated todo', async ()=>{
+	const result = await query(
+	{
+		query: getTodoQuery,
+		variables: {id: "2"}
+	}
+	);
+	expect(result.data.todo.message).toBe("color me surprised");
+})
 
 it('deletes a todo', async () => {
 	const queryResult = await query({

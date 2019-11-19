@@ -18,11 +18,13 @@ const typeDefs = gql`
   }
 
   type Query {
-    todos: [Todo]
+	todo(id: ID!): Todo
+    todos(assignee: ID): [Todo]
   }
   
   type Mutation{
 	  createTodo(message: String, assignee: ID): Todo
+	  updateTodo(id: ID, message: String): Todo
 	  deleteTodo(id: ID): Todo
 	  createAssignee(name: String): Assignee
   }
@@ -45,7 +47,16 @@ function getRandomId(){
 	
 const resolvers = {
   Query: {
-    todos: () => todos,
+	todo: (parent, args, context, info) => {
+		return todos.find((todo)=>{return todo.id == args.id});
+	},
+    todos: (parent, args, context, info) => {
+		let result = todos;
+		if(args.assignee != null){
+			result = todos.filter((todo)=>{return todo.assignee.id == args.assignee});
+		}
+		return result;
+	},
   },
   Mutation: {
 	  createTodo: (parent, args, context, info) =>{
@@ -58,6 +69,11 @@ const resolvers = {
 	  },
 	  deleteTodo: (parent, args, context, info) =>{
 		return todos.splice(todos.findIndex((todo)=>{return todo.id == args.id}),1)[0];  
+	  },
+	  updateTodo: (parent, args, context, info) =>{
+		let todo = todos.find((todo)=>{return todo.id == args.id});
+		todo.message = args.message;
+		return todo;
 	  },
 	  createAssignee: (parent, args, context, info) =>{
 		  assignees.push({
