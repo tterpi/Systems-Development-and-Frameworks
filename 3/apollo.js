@@ -20,6 +20,12 @@ const typeDefs = gql`
   type Query {
     todos: [Todo]
   }
+  
+  type Mutation{
+	  createTodo(message: String, assignee: ID): Todo
+	  deleteTodo(id: ID): Todo
+	  createAssignee(name: String): Assignee
+  }
 `;
 
 const assignees= [
@@ -33,10 +39,34 @@ const todos = [
       { id: '3', message: 'Baz', assignee: assignees[0],}
     ];
 
+function getRandomId(){
+	return Math.floor(Math.random() * Math.floor(9999999)).toString();
+}	
+	
 const resolvers = {
   Query: {
     todos: () => todos,
   },
+  Mutation: {
+	  createTodo: (parent, args, context, info) =>{
+		  todos.push({
+			  id: getRandomId(),
+			  message: args.message,
+			  assignee: assignees.find((assignee)=>{ return assignee.id == args.assignee})
+		  });
+		  return todos[todos.length -1];
+	  },
+	  deleteTodo: (parent, args, context, info) =>{
+		return todos.splice(todos.findIndex((todo)=>{return todo.id == args.id}),1)[0];  
+	  },
+	  createAssignee: (parent, args, context, info) =>{
+		  assignees.push({
+			  id: getRandomId(),
+			  name: args.name
+		  });
+		  return assignees[assignees.length -1];
+	  },
+  }
 };
 
 function getApolloServer(){ return new ApolloServer({typeDefs, resolvers})};
