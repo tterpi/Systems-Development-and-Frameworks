@@ -1,4 +1,5 @@
-const { ApolloServer, gql, makeExecutableSchema } = require('apollo-server');
+const { ApolloServer, gql} = require('apollo-server');
+const { makeExecutableSchema } = require('graphql-tools');
 
 // A schema is a collection of type definitions (hence "typeDefs")
 // that together define the "shape" of queries that are executed against
@@ -85,19 +86,11 @@ const resolvers = {
   }
 };
 
-function getApolloServer(context, middleware){ 
-	const schema = makeExecutableSchema({
-		
-	},
-	middleware);
-	return new ApolloServer({typeDefs, resolvers, context})
-};
-
 function getSchema(){
 	return makeExecutableSchema({
-		typeDefs,
-		resolvers
-	});
+		typeDefs: typeDefs,
+		resolvers: resolvers
+});
 }
 
 module.exports = getSchema;

@@ -1,7 +1,6 @@
-const getApolloServer = require("./apollo.js");
+const getApolloServer = require('./apolloServer.js');
 
-const server = getApolloServer();
-server.listen().then(({url})=> {
+getApolloServer().listen().then(({url})=> {
  console.log(`Apollo server running at: ${url}`);
 });
 

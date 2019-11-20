@@ -1,13 +1,8 @@
 const { createTestClient } = require('apollo-server-testing');
-const getSchema = require("./apollo.js");
-const {ApolloServer, gql} = require('apollo-server');
-const {permissions} = require('./permissions.js');
-const { applyMiddleware } = require('graphql-middleware');
+const {gql} = require('apollo-server');
+const getApolloServer = require('./apolloServer.js');
 
-
-const schema = getSchema();
-const schemaWithMiddleware = applyMiddleware(schema, permissions);
-const server = new ApolloServer({schema, context: ()=>{return {userName: "Hanna"}}});
+const server = getApolloServer();
 const { query, mutate } = createTestClient(server);
 
 const createTodoMutation = gql`
