@@ -14,7 +14,8 @@
     "apollo-server-testing": "^2.9.9",
     "graphql": "^14.5.8",
     "graphql-middleware": "^4.0.2",
-    "graphql-shield": "^7.0.2"
+    "graphql-shield": "^7.0.2",
+    "graphql-tools": "^4.0.6"
   },
   "devDependencies": {
     "jest": "^24.9.0"
