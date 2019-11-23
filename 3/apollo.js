@@ -1,5 +1,7 @@
 const { ApolloServer, gql} = require('apollo-server');
 const { makeExecutableSchema } = require('graphql-tools');
+const jwt = require('jsonwebtoken');
+const secret = require('./secret.js');
 
 // A schema is a collection of type definitions (hence "typeDefs")
 // that together define the "shape" of queries that are executed against
@@ -24,10 +26,11 @@ const typeDefs = gql`
   }
   
   type Mutation{
-	  createTodo(message: String, assignee: ID): Todo
-	  updateTodo(id: ID, message: String): Todo
-	  deleteTodo(id: ID): Todo
-	  createAssignee(name: String): Assignee
+	  login(userName: String!, pwd: String!): String! 
+	  createTodo(message: String, assignee: ID!): Todo
+	  updateTodo(id: ID!, message: String): Todo
+	  deleteTodo(id: ID!): Todo
+	  createAssignee(name: String!): Assignee
   }
 `;
 
@@ -60,6 +63,9 @@ const resolvers = {
 	},
   },
   Mutation: {
+	  login: (parent, args, context, info) =>{
+		  return jwt.sign({userName: args.userName}, secret, {expiresIn: "1 day"});
+	  },
 	  createTodo: (parent, args, context, info) =>{
 		  todos.push({
 			  id: getRandomId(),
