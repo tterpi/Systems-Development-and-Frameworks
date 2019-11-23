@@ -6,7 +6,7 @@ const server = getApolloServer();
 const { query, mutate } = createTestClient(server);
 
 const createTodoMutation = gql`
-	mutation createTodo($message: String, $assignee: ID){
+	mutation createTodo($message: String, $assignee: ID!){
 		createTodo(message: $message, assignee: $assignee){
 			message
 			assignee{
@@ -17,7 +17,7 @@ const createTodoMutation = gql`
 `;
 
 const createAssigneeMutation = gql`
-	mutation createAssignee($name: String){
+	mutation createAssignee($name: String!){
 		createAssignee(name: $name){
 			name
 		}
@@ -25,7 +25,7 @@ const createAssigneeMutation = gql`
 `;
 
 const updateTodoMutation = gql`
-	mutation updateTodo($id: ID, $message: String){
+	mutation updateTodo($id: ID!, $message: String){
 		updateTodo(id:$id, message:$message){
 			id
 			message
@@ -43,7 +43,7 @@ const getTodoQuery = gql`
 `;
 
 const deleteTodoMutation = gql`
-	mutation deleteTodo($id: ID){
+	mutation deleteTodo($id: ID!){
 		deleteTodo(id: $id){
 			id
 			message
