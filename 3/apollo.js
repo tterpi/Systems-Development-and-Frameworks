@@ -3,6 +3,9 @@ const { makeExecutableSchema } = require('graphql-tools');
 const jwt = require('jsonwebtoken');
 const secret = require('./secret.js');
 
+let assignees
+let todos
+
 // A schema is a collection of type definitions (hence "typeDefs")
 // that together define the "shape" of queries that are executed against
 // your data.
@@ -34,12 +37,12 @@ const typeDefs = gql`
   }
 `;
 
-const assignees= [
+const getAssignees= ()=> [
       {id: '1', name: 'Hans'},
       {id: '2', name: 'Hanna'}
     ];
 
-const todos = [
+const getTodos = ()=>[
       { id: '1', message: 'Foo', assignee: assignees[0],},
       { id: '2', message: 'Bar', assignee: assignees[1],},
       { id: '3', message: 'Baz', assignee: assignees[0],}
@@ -93,6 +96,9 @@ const resolvers = {
 };
 
 function getSchema(){
+	//reset the data each time the schema is returned
+	assignees = getAssignees();
+	todos = getTodos();
 	return makeExecutableSchema({
 		typeDefs: typeDefs,
 		resolvers: resolvers

@@ -10,4 +10,12 @@ function getApolloServer(){
 	return server;
 }
 
-module.exports = getApolloServer;
+function getTestApolloServer(context){
+	const schema = getSchema();
+	const schemaWithMiddleware = applyMiddleware(schema, permissions);
+	const server = new ApolloServer({schema: schemaWithMiddleware, context: context});
+	return server;
+}
+
+module.exports.getApolloServer = getApolloServer;
+module.exports.getTestApolloServer = getTestApolloServer;
