@@ -94,7 +94,7 @@ describe('User is logged in', ()=>{
 				mutation: createTodoMutation,
 				variables: {message: "The new message", assignee: '1'}
 		});
-		console.log(result);
+		//console.log(result);
 		expect(result.data).toMatchObject({
 			"createTodo":{
 				message: "The new message",
