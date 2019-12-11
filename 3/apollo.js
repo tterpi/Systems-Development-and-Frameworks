@@ -38,8 +38,8 @@ const typeDefs = gql`
 `;
 
 const getAssignees= ()=> [
-      {id: '1', name: 'Hans'},
-      {id: '2', name: 'Hanna'}
+      {id: '1', name: 'Hans', password: "1234"},
+      {id: '2', name: 'Hanna', password: "5678"}
     ];
 
 const getTodos = ()=>[
@@ -57,25 +57,54 @@ const resolvers = {
 	todo: (parent, args, context, info) => {
 		return todos.find((todo)=>{return todo.id == args.id});
 	},
-    todos: (parent, args, context, info) => {
-		let result = todos;
+    todos: async(parent, args, context, info) => {
+		const session = context.driver.session()
+		let result
 		if(args.assignee != null){
-			result = todos.filter((todo)=>{return todo.assignee.id == args.assignee});
+			result = await session.run(`
+			MATCH (t:Todo)-[:IS_ASSIGNED_TO]->(p:Person {id: $assignee})
+			RETURN t, p
+			`,
+			{
+				assignee: args.assignee
+			})
+		}else{
+			result = await session.run(`
+			MATCH (t:Todo)-[:IS_ASSIGNED_TO]->(p:Person)
+			RETURN t, p
+			`)			
 		}
-		return result;
+
+		session.close()
+		//console.log(result);
+		return result.records.map((record) => {
+			let response = {...record.get('t').properties, assignee: record.get('p').properties}
+			return response;
+		});
 	},
   },
   Mutation: {
 	  login: (parent, args, context, info) =>{
 		  return jwt.sign({userName: args.userName}, secret, {expiresIn: "1 day"});
 	  },
-	  createTodo: (parent, args, context, info) =>{
-		  todos.push({
-			  id: getRandomId(),
-			  message: args.message,
-			  assignee: assignees.find((assignee)=>{ return assignee.id == args.assignee})
-		  });
-		  return todos[todos.length -1];
+	  createTodo: async (parent, args, context, info) => {
+		  const session = context.driver.session()
+		  const result = await session.run(`
+		  MATCH (p:Person) WHERE p.id = $assignee
+		  CREATE (t:Todo {id: $id, message: $message})
+		  MERGE (t)-[:IS_ASSIGNED_TO]->(p)
+		  RETURN t, p
+		  `,
+		  {
+			id: getRandomId(),
+			message: args.message,
+			assignee: args.assignee
+		  }
+		  )
+		  session.close();
+		  //console.log(result);
+		  const record = result.records[0];
+		  return {...record.get('t').properties, assignee: record.get('p').properties};
 	  },
 	  deleteTodo: (parent, args, context, info) =>{
 		return todos.splice(todos.findIndex((todo)=>{return todo.id == args.id}),1)[0];  
@@ -85,12 +114,20 @@ const resolvers = {
 		todo.message = args.message;
 		return todo;
 	  },
-	  createAssignee: (parent, args, context, info) =>{
-		  assignees.push({
+	  createAssignee: async (parent, args, context, info) => {
+		  const session = context.driver.session()
+		  const result = await session.run(`
+		  CREATE (p:Person {id: $id, name: $name})
+		  RETURN p
+		  `,
+		  {
 			  id: getRandomId(),
 			  name: args.name
-		  });
-		  return assignees[assignees.length -1];
+		  }
+		  )
+		  session.close();
+		  //console.log(result.records[0].get('p'));
+		  return result.records[0].get('p').properties;
 	  },
   }
 };
