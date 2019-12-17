@@ -1,6 +1,7 @@
 const { createTestClient } = require('apollo-server-testing');
 const {gql} = require('apollo-server');
 const {getTestApolloServer} = require('./apolloServer.js');
+const {importDataToNeo4j, cleanUpDataInNeo4j, closeDriver} = require('./mockData.js');
 
 const server = getTestApolloServer();
 const initClient = createTestClient(server);
@@ -23,8 +24,8 @@ const createTodoMutation = gql`
 `;
 
 const createAssigneeMutation = gql`
-	mutation createAssignee($name: String!){
-		createAssignee(name: $name){
+	mutation createAssignee($name: String!, $password: String!){
+		createAssignee(name: $name, password: $password){
 			name
 		}
 	}
@@ -53,9 +54,6 @@ const deleteTodoMutation = gql`
 		deleteTodo(id: $id){
 			id
 			message
-			assignee{
-				name
-			}
 		}
 	}
 `;
@@ -63,7 +61,7 @@ const deleteTodoMutation = gql`
 	
 const todosQuery = gql`
 	query TodosQuery($assignee: ID){
-		todos(assignee: $assignee){
+		todos(assignee: $assignee, first: 10, offset:0){
 			id
 			message
 			assignee{
@@ -73,28 +71,36 @@ const todosQuery = gql`
 	}
 `;
 
+afterAll(async()=>{
+	await closeDriver()
+})
+
 describe('User is logged in', ()=>{
 	let query
 	let mutate
 	beforeEach(async()=>{
+		await importDataToNeo4j()
 		const result = await initClient.mutate({
 			mutation: loginMutation,
 			variables: {userName: "Hans", pwd: "1234"}
 		})
 		
-		const testServer = getTestApolloServer(()=>{return {token: result.data.login}});
+		const testServer = getTestApolloServer({token: result.data.login});
 		const testClient = createTestClient(testServer);
 		//console.log(result);
 		query = testClient.query;
 		mutate = testClient.mutate;
 	});
+	afterEach(async()=>{
+		await cleanUpDataInNeo4j()
+	})
 	
 	it('creates a new todo', async ()=>{	
 		const result = await mutate({
 				mutation: createTodoMutation,
 				variables: {message: "The new message", assignee: '1'}
 		});
-		//console.log(result);
+		console.log(result);
 		expect(result.data).toMatchObject({
 			"createTodo":{
 				message: "The new message",
@@ -112,7 +118,7 @@ describe('User is logged in', ()=>{
 			variables: {id: "2", message: "color me surprised"}
 		}
 		);
-		
+		console.log(result);
 		expect(result.data).toMatchObject({
 			updateTodo:
 			{
@@ -133,16 +139,26 @@ describe('User is logged in', ()=>{
 			mutation: deleteTodoMutation,
 			variables: {id: expectedTodo.id}
 		});
-		//console.log(result);
-		expect(result.data.deleteTodo).toMatchObject(expectedTodo);
+		
+		const emptyResult = await query(
+		{
+			query: getTodoQuery,
+			variables: {id: expectedTodo.id}
+		}
+		);
+		
+		console.log(result);
+		console.log(expectedTodo);
+		expect(result.data.deleteTodo.id).toBe(expectedTodo.id);
+		expect(emptyResult.data.todo).toBeFalsy;
 	})
 
 	it('adds an assignee', async ()=>{
 		const result = await mutate({
 			mutation: createAssigneeMutation,
-			variables: {name: "Helga"}
+			variables: {name: "Helga", password: "1337"}
 		});
-		
+		console.log(result);
 		expect(result.data).toMatchObject({
 			createAssignee:{
 				name: "Helga"
@@ -154,19 +170,23 @@ describe('User is logged in', ()=>{
 describe('User is not logged in', ()=>{
 	let query
 	let mutate
-	beforeEach(()=>{
+	beforeEach(async ()=>{
+		await importDataToNeo4j()
 		const testServer = getTestApolloServer(()=>{return {token: ""}});
 		const testClient = createTestClient(testServer);
 		//console.log(result);
 		query = testClient.query;
 		mutate = testClient.mutate;
 	})
+	afterEach(async()=>{
+		await cleanUpDataInNeo4j()
+	})
 	
 	it('gets all todos', async ()=>{
 		const result = await query({
 			query: todosQuery,
 		});
-		expect(result.data.todos.length).toBe(3);
+		expect(result.data.todos.length).toBe(4);
 	});
 
 	it('gets a single todo', async ()=>{

@@ -4,9 +4,6 @@ const { neo4jgraphql, cypherMutation } = require('neo4j-graphql-js');
 const jwt = require('jsonwebtoken');
 const secret = require('./secret.js');
 
-let assignees
-let todos
-
 // A schema is a collection of type definitions (hence "typeDefs")
 // that together define the "shape" of queries that are executed against
 // your data. @relation(name: "IS_ASSIGNED_TO", direction: "OUT")
@@ -39,17 +36,6 @@ const typeDefs = gql`
 	  updateAssignee(id: ID!, name: String!, password: String!): Assignee
   }
 `;
-
-const getAssignees= ()=> [
-      {id: '1', name: 'Hans', password: "1234"},
-      {id: '2', name: 'Hanna', password: "5678"}
-    ];
-
-const getTodos = ()=>[
-      { id: '1', message: 'Foo', assignee: assignees[0],},
-      { id: '2', message: 'Bar', assignee: assignees[1],},
-      { id: '3', message: 'Baz', assignee: assignees[0],}
-    ];
 
 function getRandomId(){
 	return Math.floor(Math.random() * Math.floor(9999999)).toString();
@@ -143,9 +129,7 @@ const resolvers = {
 		return neo4jgraphql(parent, args, context, info)
 	  },
 	  updateTodo: (parent, args, context, info) =>{
-		  let result = neo4jgraphql(parent, args, context, info)
-		  console.log(result)
-		  return result
+		  return neo4jgraphql(parent, args, context, info)
 	  },
 	  createAssignee: async (parent, args, context, info) => {
 		  const session = context.driver.session()
@@ -162,18 +146,13 @@ const resolvers = {
 		  session.close();
 		  return result.records[0].get('p').properties;
 	  },
-	  updateAssignee: async (parent, args, context, info) =>{
-		  let result = cypherMutation(args, context, info)
-		  console.log(result)
+	  updateAssignee: (parent, args, context, info) =>{
 		  return neo4jgraphql(parent, args, context, info)
 	  },
   }
 };
 
 function getSchema(){
-	//reset the data each time the schema is returned
-	assignees = getAssignees();
-	todos = getTodos();
 	return makeExecutableSchema({
 		typeDefs: typeDefs,
 		resolvers: resolvers

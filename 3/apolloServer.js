@@ -20,7 +20,10 @@ function getApolloServer(){
 function getTestApolloServer(context){
 	const schema = getSchema();
 	const schemaWithMiddleware = applyMiddleware(schema, permissions);
-	const server = new ApolloServer({schema: schemaWithMiddleware, context: context});
+	const server = new ApolloServer({
+		schema: schemaWithMiddleware, 
+		context: ()=>{return {...context, driver: getNeo4jDriver()}}
+	});
 	return server;
 }
 
