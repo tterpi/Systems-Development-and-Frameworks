@@ -20,7 +20,8 @@ const permissions = shield({
 	createTodo: isAuthenticated,
 	updateTodo: isAuthenticated,
 	deleteTodo: isAuthenticated,
-	createAssignee: isAuthenticated
+	createAssignee: isAuthenticated,
+	updateAssignee: isAuthenticated
   },
 })
 

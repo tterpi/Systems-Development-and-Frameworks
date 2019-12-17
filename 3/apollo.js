@@ -1,6 +1,6 @@
 const { ApolloServer, gql} = require('apollo-server');
 const { makeExecutableSchema } = require('graphql-tools');
-const { neo4jgraphql } = require('neo4j-graphql-js');
+const { neo4jgraphql, cypherMutation } = require('neo4j-graphql-js');
 const jwt = require('jsonwebtoken');
 const secret = require('./secret.js');
 
@@ -21,12 +21,13 @@ const typeDefs = gql`
 
   type Assignee {
     id: ID!
-    name: String
+    name: String!
+	password: String!
   }
 
   type Query {
 	todo(id: ID!): Todo
-    todos(assignee: ID): [Todo]
+    todos(assignee: ID, first: Int, offset: Int, desc: Boolean): [Todo]
   }
   
   type Mutation{
@@ -34,7 +35,8 @@ const typeDefs = gql`
 	  createTodo(message: String, assignee: ID!): Todo
 	  updateTodo(id: ID!, message: String): Todo
 	  deleteTodo(id: ID!): Todo
-	  createAssignee(name: String!): Assignee
+	  createAssignee(name: String!, password: String!): Assignee
+	  updateAssignee(id: ID!, name: String!, password: String!): Assignee
   }
 `;
 
@@ -57,28 +59,58 @@ const resolvers = {
   Query: {
 	todo: (parent, args, context, info) => {
 		return neo4jgraphql(parent, args, context, info)
-		//return todos.find((todo)=>{return todo.id == args.id});
 	},
     todos: async(parent, args, context, info) => {
 		const session = context.driver.session()
 		let result
 		if(args.assignee != null){
-			result = await session.run(`
+			let query = `
 			MATCH (t:Todo)-[:IS_ASSIGNED_TO]->(p:Person {id: $assignee})
 			RETURN t, p
-			`,
+			ORDER BY p.name
+			SKIP $s
+			LIMIT $l
+			`
+			if(args.desc == true){
+				query = `
+				MATCH (t:Todo)-[:IS_ASSIGNED_TO]->(p:Person {id: $assignee})
+				RETURN t, p
+				ORDER BY p.name DESC
+				SKIP $s
+				LIMIT $l
+				`
+			}
+			result = await session.run(query,
 			{
-				assignee: args.assignee
+				assignee: args.assignee,
+				s: args.offset,
+				l: args.first
 			})
 		}else{
-			result = await session.run(`
+			let query = `
 			MATCH (t:Todo)-[:IS_ASSIGNED_TO]->(p:Person)
 			RETURN t, p
-			`)			
+			ORDER BY p.name
+			SKIP $s
+			LIMIT $l
+			`
+			if(args.desc == true){
+				query = `
+				MATCH (t:Todo)-[:IS_ASSIGNED_TO]->(p:Person)
+				RETURN t, p
+				ORDER BY p.name DESC
+				SKIP $s
+				LIMIT $l
+				`
+			}
+			result = await session.run(query,
+			{
+				s: args.offset,
+				l: args.first
+			})			
 		}
 
 		session.close()
-		//console.log(result);
 		return result.records.map((record) => {
 			let response = {...record.get('t').properties, assignee: record.get('p').properties}
 			return response;
@@ -104,34 +136,36 @@ const resolvers = {
 		  }
 		  )
 		  session.close();
-		  //console.log(result);
 		  const record = result.records[0];
 		  return {...record.get('t').properties, assignee: record.get('p').properties};
 	  },
 	  deleteTodo: (parent, args, context, info) =>{
 		return neo4jgraphql(parent, args, context, info)
-		//return todos.splice(todos.findIndex((todo)=>{return todo.id == args.id}),1)[0];  
 	  },
 	  updateTodo: (parent, args, context, info) =>{
-		  return neo4jgraphql(parent, args, context, info)
-		//let todo = todos.find((todo)=>{return todo.id == args.id});
-		//todo.message = args.message;
-		//return todo;
+		  let result = neo4jgraphql(parent, args, context, info)
+		  console.log(result)
+		  return result
 	  },
 	  createAssignee: async (parent, args, context, info) => {
 		  const session = context.driver.session()
 		  const result = await session.run(`
-		  CREATE (p:Person {id: $id, name: $name})
+		  CREATE (p:Person:Assignee {id: $id, name: $name, password: $password})
 		  RETURN p
 		  `,
 		  {
 			  id: getRandomId(),
-			  name: args.name
+			  name: args.name,
+			  password: args.password
 		  }
 		  )
 		  session.close();
-		  //console.log(result.records[0].get('p'));
 		  return result.records[0].get('p').properties;
+	  },
+	  updateAssignee: async (parent, args, context, info) =>{
+		  let result = cypherMutation(args, context, info)
+		  console.log(result)
+		  return neo4jgraphql(parent, args, context, info)
 	  },
   }
 };
