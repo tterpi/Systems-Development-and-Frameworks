@@ -5,7 +5,7 @@ const { applyMiddleware } = require('graphql-middleware');
 const getNeo4jDriver = require("./neo4j.js");
 
 function getApolloServer(){
-	const schema = getSchema();
+	let schema = getSchema();
 	const schemaWithMiddleware = applyMiddleware(schema, permissions);
 	const server = new ApolloServer(
 	{

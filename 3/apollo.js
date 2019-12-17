@@ -1,5 +1,6 @@
 const { ApolloServer, gql} = require('apollo-server');
 const { makeExecutableSchema } = require('graphql-tools');
+const { neo4jgraphql } = require('neo4j-graphql-js');
 const jwt = require('jsonwebtoken');
 const secret = require('./secret.js');
 
@@ -8,7 +9,7 @@ let todos
 
 // A schema is a collection of type definitions (hence "typeDefs")
 // that together define the "shape" of queries that are executed against
-// your data.
+// your data. @relation(name: "IS_ASSIGNED_TO", direction: "OUT")
 const typeDefs = gql`
   # Comments in GraphQL strings (such as this one) start with the hash (#) symbol.
 
@@ -55,7 +56,8 @@ function getRandomId(){
 const resolvers = {
   Query: {
 	todo: (parent, args, context, info) => {
-		return todos.find((todo)=>{return todo.id == args.id});
+		return neo4jgraphql(parent, args, context, info)
+		//return todos.find((todo)=>{return todo.id == args.id});
 	},
     todos: async(parent, args, context, info) => {
 		const session = context.driver.session()
@@ -107,12 +109,14 @@ const resolvers = {
 		  return {...record.get('t').properties, assignee: record.get('p').properties};
 	  },
 	  deleteTodo: (parent, args, context, info) =>{
-		return todos.splice(todos.findIndex((todo)=>{return todo.id == args.id}),1)[0];  
+		return neo4jgraphql(parent, args, context, info)
+		//return todos.splice(todos.findIndex((todo)=>{return todo.id == args.id}),1)[0];  
 	  },
 	  updateTodo: (parent, args, context, info) =>{
-		let todo = todos.find((todo)=>{return todo.id == args.id});
-		todo.message = args.message;
-		return todo;
+		  return neo4jgraphql(parent, args, context, info)
+		//let todo = todos.find((todo)=>{return todo.id == args.id});
+		//todo.message = args.message;
+		//return todo;
 	  },
 	  createAssignee: async (parent, args, context, info) => {
 		  const session = context.driver.session()
