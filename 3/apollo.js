@@ -104,8 +104,23 @@ const resolvers = {
 	},
   },
   Mutation: {
-	  login: (parent, args, context, info) =>{
-		  return jwt.sign({userName: args.userName}, secret, {expiresIn: "1 day"});
+	  login: async(parent, args, context, info) =>{
+		  const session = context.driver.session()
+		  const result = await session.run(`
+			  MATCH (p:Person {name: $name, password: $password})
+			  RETURN p
+			  `,
+		  {
+			name: args.userName,
+			password: args.pwd
+		  }
+		  )
+		  const record = result.records[0];
+		  if(record){
+			  return jwt.sign({userName: args.userName, }, secret, {expiresIn: "1 day"});
+		  }else{
+			  return ""
+		  }
 	  },
 	  createTodo: async (parent, args, context, info) => {
 		  const session = context.driver.session()
