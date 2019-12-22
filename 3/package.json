@@ -1,0 +1,25 @@
+{
+  "name": "3",
+  "version": "1.0.0",
+  "description": "Test-drive the development of a GraphQL server.",
+  "main": "index.js",
+  "scripts": {
+    "test": "jest"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "apollo-server": "^2.9.9",
+    "apollo-server-testing": "^2.9.9",
+    "graphql": "^14.5.8",
+    "graphql-middleware": "^4.0.2",
+    "graphql-shield": "^7.0.2",
+    "graphql-tools": "^4.0.6",
+    "jsonwebtoken": "^8.5.1",
+    "neo4j-driver": "^4.0.0"
+  },
+  "devDependencies": {
+    "jest": "^24.9.0"
+  }
+}
