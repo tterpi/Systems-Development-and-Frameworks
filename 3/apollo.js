@@ -13,7 +13,7 @@ const typeDefs = gql`
   type Todo {
     id: ID!
     message: String
-    assignee: Assignee
+    assignee: Assignee @relation(name: "IS_ASSIGNED_TO", direction: "OUT")
   }
 
   type Assignee {
