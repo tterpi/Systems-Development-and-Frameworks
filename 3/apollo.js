@@ -1,6 +1,6 @@
 const { ApolloServer, gql} = require('apollo-server');
 const { makeExecutableSchema } = require('graphql-tools');
-const { neo4jgraphql, cypherMutation } = require('neo4j-graphql-js');
+const { neo4jgraphql, cypherMutation, makeAugmentedSchema } = require('neo4j-graphql-js');
 const jwt = require('jsonwebtoken');
 const secret = require('./secret.js');
 
@@ -168,9 +168,14 @@ const resolvers = {
 };
 
 function getSchema(){
-	return makeExecutableSchema({
-		typeDefs: typeDefs,
-		resolvers: resolvers
+	return makeAugmentedSchema({
+		typeDefs,
+		resolvers,
+		config: {
+			query: false,
+			mutation: false
+		},
+		debug: true
 });
 }
 
