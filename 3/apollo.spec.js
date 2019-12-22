@@ -60,8 +60,8 @@ const deleteTodoMutation = gql`
 
 	
 const todosQuery = gql`
-	query TodosQuery($assignee: ID){
-		todos(assignee: $assignee, first: 10, offset:0){
+	query TodosQuery($assignee: ID, $first: Int, $offset: Int){
+		todos(assignee: $assignee, first: $first, offset: $offset){
 			id
 			message
 			assignee{
@@ -131,6 +131,10 @@ describe('User is logged in', ()=>{
 	it('deletes a todo', async () => {
 		const queryResult = await query({
 			query: todosQuery,
+			variables: {
+				first: 10,
+				offset: 0
+			}
 		});
 		
 		let expectedTodo = queryResult.data.todos[queryResult.data.todos.length -1];
@@ -185,8 +189,23 @@ describe('User is not logged in', ()=>{
 	it('gets all todos', async ()=>{
 		const result = await query({
 			query: todosQuery,
+			variables: {
+				first: 10,
+				offset: 0
+			}
 		});
 		expect(result.data.todos.length).toBe(4);
+	});
+	
+	it('gets all todos with pagination', async ()=>{
+		const result = await query({
+			query: todosQuery,
+			variables: {
+				first: 2,
+				offset: 1
+			}
+		});
+		expect(result.data.todos.length).toBe(2);
 	});
 
 	it('gets a single todo', async ()=>{
@@ -202,7 +221,11 @@ describe('User is not logged in', ()=>{
 	it('gets all todos with assignee 1', async ()=>{
 		const result = await query({
 			query: todosQuery,
-			variables: {assignee: "1"}
+			variables: {
+				assignee: "1",
+				first: 10,
+				offset: 0
+			}
 		});
 		expect(result.data.todos.length).toBe(2);
 	});
