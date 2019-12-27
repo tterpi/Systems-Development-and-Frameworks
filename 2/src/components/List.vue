@@ -1,5 +1,6 @@
 <template>
 	<div>
+        <Login/>
 		<ul>
 			<ListItem
 				v-for="(item, index) in todos"
@@ -15,17 +16,35 @@
 
 <script>
 import ListItem from './ListItem.vue'
+import Login from './Login.vue'
+import gql from 'graphql-tag'
 
 export default {
-    components: { ListItem },
+    components: { ListItem, Login },
     methods: {
         addTodo: function () {
             this.todos.push(
                 { id: this.getNextId(), message: '', }
             );
         },
-        saveTodo: function (todo) {
-            this.todos[todo.index].message = todo.message;
+        saveTodo: async function (todo) {
+            await this.$apollo.mutate(
+                {
+                    mutation: gql`
+                    mutation updateTodo($id: ID!, $message: String){
+                        updateTodo(id:$id, message:$message){
+                            id
+                            message
+                        }
+                    }
+                `,
+                variables: {
+                    id: todo.index,
+                    message: todo.message
+                }
+                }
+            )
+            //this.todos[todo.index].message = todo.message;
         },
         deleteTodo: function (index) {
             this.todos.splice(index, 1);
@@ -37,6 +56,25 @@ export default {
     created: function () {
         if (this.nextId === null) {
             this.nextId = this.todos.length + 1;
+        }
+    },
+    apollo: {
+        todos: {
+            query: gql`
+            query TodosQuery($assignee: ID, $first: Int, $offset: Int){
+                todos(assignee: $assignee, first: $first, offset: $offset){
+                    id
+                    message
+                    assignee{
+                        name
+                    }
+                }
+            }
+            `,
+            variables: {
+                first: 25,
+                offset: 0
+            }
         }
     },
     data: function () {

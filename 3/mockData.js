@@ -1,7 +1,6 @@
-const getNeo4jDriver = require("./neo4j.js");
+const {getNeo4jDriver} = require("./neo4j.js");
 let assignees
 let todos
-let driver
 
 const getAssignees= ()=> [
       {id: '1', name: 'Hans', password: "1234"},
@@ -17,7 +16,7 @@ const getTodos = ()=>[
     ];
 
 async function importDataToNeo4j(){
-	driver = getNeo4jDriver();
+	const driver = getNeo4jDriver();
 	const session = driver.session();
 	
 	assignees = getAssignees()
@@ -52,13 +51,10 @@ async function importDataToNeo4j(){
 }
 
 async function cleanUpDataInNeo4j(){
+	const driver = getNeo4jDriver()
 	const session = driver.session()
 	await session.run(`MATCH (n) DETACH DELETE n`)
 	session.close()
 }
 
-async function closeDriver(){
-	await driver.close()
-}
-
-module.exports = {importDataToNeo4j, cleanUpDataInNeo4j, closeDriver}
+module.exports = {importDataToNeo4j, cleanUpDataInNeo4j}

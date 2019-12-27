@@ -1,7 +1,8 @@
 const { createTestClient } = require('apollo-server-testing');
 const {gql} = require('apollo-server');
 const {getTestApolloServer} = require('./apolloServer.js');
-const {importDataToNeo4j, cleanUpDataInNeo4j, closeDriver} = require('./mockData.js');
+const {importDataToNeo4j, cleanUpDataInNeo4j} = require('./mockData.js');
+const {closeDriver} = require("./neo4j.js");
 
 const server = getTestApolloServer();
 const initClient = createTestClient(server);
@@ -70,6 +71,11 @@ const todosQuery = gql`
 		}
 	}
 `;
+
+
+beforeAll(async()=>{
+	await cleanUpDataInNeo4j()
+})
 
 afterAll(async()=>{
 	await closeDriver()
