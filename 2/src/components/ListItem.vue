@@ -24,13 +24,17 @@ export default{
 	},
 	methods: {
 		saveTodo: function(){
-			this.$emit('save-todo', this.inputValue);
+			if(this.todo.id !== null){
+				this.$emit('save-todo', this.inputValue);
+			}else{
+				this.$emit('create-todo', this.inputValue)
+			}
 			this.displayTodo = true;
 		}
 	}, 
 	computed: {
 		todoString: function(){
-			return this.todo.id + ". " + this.todo.message;
+			return this.todo.id + ". " + this.todo.message + "; assignee: " + this.todo.assignee.name;
 		}
 	}
 }

@@ -8,6 +8,7 @@
 				v-bind:key="index"
 				v-on:delete-todo="deleteTodo(item.id)"
 				v-on:save-todo="saveTodo({index: item.id, message: $event})"
+                v-on:create-todo="createTodo($event)"
 			/>
 		</ul>
 		<button class="add-button" v-on:click="addTodo()">Add todo</button>
@@ -24,8 +25,27 @@ export default {
     methods: {
         addTodo: function () {
             this.todos.push(
-                { id: this.getNextId(), message: '', }
+                { id: null, message: '', assignee: {id: null, name: "unknown"}}
             );
+        },
+        createTodo: async function (todo){
+            await this.$apollo.mutate({
+                mutation:gql`
+                mutation createTodo($message: String, $assignee: ID!){
+                    createTodo(message: $message, assignee: $assignee){
+                        message
+                        assignee{
+                            name
+                        }
+                    }
+                }
+                `,
+                variables:{
+                    message: todo,
+                    assignee: '2'
+                }
+            })
+            this.$apollo.queries.todos.refetch()
         },
         saveTodo: async function (todo) {
             await this.$apollo.mutate(
@@ -80,6 +100,7 @@ export default {
                     id
                     message
                     assignee{
+                        id
                         name
                     }
                 }
@@ -93,11 +114,7 @@ export default {
     },
     data: function () {
         return {
-            todos: [
-                { id: '1', message: 'Foo', },
-                { id: '2', message: 'Bar', },
-                { id: '3', message: 'Baz', }
-            ],
+            todos: [],
             nextId: null,
         }
     },
