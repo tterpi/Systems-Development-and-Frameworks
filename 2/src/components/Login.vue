@@ -1,7 +1,7 @@
 <template>
 	<div>
         <input placeholder="username" v-model="userName"/>
-        <input placeholder="password" v-model="password"/>
+        <input placeholder="password" type="password" v-model="password"/>
 		<button class="saveButton" v-on:click="login">login</button>
 	</div>
 </template>
@@ -36,9 +36,6 @@ export default{
 			
 			if(token.data.login){
 				onLogin(this.$apollo.getClient(),token.data.login)
-				//console.log("User logged in in successfully!")
-			}else{
-				//console.error("login failed!")
 			}
 		}
 	},

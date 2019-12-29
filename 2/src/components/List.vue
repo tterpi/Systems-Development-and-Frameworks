@@ -5,9 +5,9 @@
 			<ListItem
 				v-for="(item, index) in todos"
 				v-bind:todo="item"
-				v-bind:key="item.id"
-				v-on:delete-todo="deleteTodo(index)"
-				v-on:save-todo="saveTodo({index: index, message: $event})"
+				v-bind:key="index"
+				v-on:delete-todo="deleteTodo(item.id)"
+				v-on:save-todo="saveTodo({index: item.id, message: $event})"
 			/>
 		</ul>
 		<button class="add-button" v-on:click="addTodo()">Add todo</button>
@@ -46,8 +46,22 @@ export default {
             )
             //this.todos[todo.index].message = todo.message;
         },
-        deleteTodo: function (index) {
-            this.todos.splice(index, 1);
+        deleteTodo: async function (index) {
+            await this.$apollo.mutate({
+                mutation: gql`
+                mutation deleteTodo($id: ID!){
+                    deleteTodo(id: $id){
+                        id
+                        message
+                    }
+                }
+                `,
+                variables: {
+                    id: index
+                }
+            })
+            this.$apollo.queries.todos.refetch()
+            //this.todos.splice(index, 1);
         },
         getNextId: function () {
             return this.nextId++;
