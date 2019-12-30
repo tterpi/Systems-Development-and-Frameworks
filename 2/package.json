@@ -10,6 +10,7 @@
   },
   "dependencies": {
     "core-js": "^3.3.2",
+    "jsonwebtoken": "^8.5.1",
     "vue": "^2.6.10",
     "vue-apollo": "^3.0.0-beta.11"
   },
@@ -35,7 +36,9 @@
       "plugin:vue/essential",
       "eslint:recommended"
     ],
-    "rules": {},
+    "rules": {
+      "no-console": "off"
+    },
     "parserOptions": {
       "parser": "babel-eslint"
     },

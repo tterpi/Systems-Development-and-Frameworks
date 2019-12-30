@@ -3,48 +3,30 @@
         <Login/>
 		<ul>
 			<ListItem
-				v-for="(item, index) in todos"
+				v-for="(item) in todos"
 				v-bind:todo="item"
-				v-bind:key="index"
+				v-bind:key="item.id"
 				v-on:delete-todo="deleteTodo(item.id)"
 				v-on:save-todo="saveTodo({index: item.id, message: $event})"
                 v-on:create-todo="createTodo($event)"
 			/>
 		</ul>
-		<button class="add-button" v-on:click="addTodo()">Add todo</button>
+		<CreateTodo
+            v-on:todo-created="refetch"
+        />
 	</div>
 </template>
 
 <script>
 import ListItem from './ListItem.vue'
 import Login from './Login.vue'
+import CreateTodo from './CreateTodo.vue'
 import gql from 'graphql-tag'
 
 export default {
-    components: { ListItem, Login },
+    components: { ListItem, Login, CreateTodo },
     methods: {
-        addTodo: function () {
-            this.todos.push(
-                { id: null, message: '', assignee: {id: null, name: "unknown"}}
-            );
-        },
-        createTodo: async function (todo){
-            await this.$apollo.mutate({
-                mutation:gql`
-                mutation createTodo($message: String, $assignee: ID!){
-                    createTodo(message: $message, assignee: $assignee){
-                        message
-                        assignee{
-                            name
-                        }
-                    }
-                }
-                `,
-                variables:{
-                    message: todo,
-                    assignee: '2'
-                }
-            })
+        refetch: function(){
             this.$apollo.queries.todos.refetch()
         },
         saveTodo: async function (todo) {

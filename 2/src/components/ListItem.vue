@@ -26,8 +26,6 @@ export default{
 		saveTodo: function(){
 			if(this.todo.id !== null){
 				this.$emit('save-todo', this.inputValue);
-			}else{
-				this.$emit('create-todo', this.inputValue)
 			}
 			this.displayTodo = true;
 		}

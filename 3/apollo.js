@@ -24,7 +24,8 @@ const typeDefs = gql`
 
   type Query {
 	todo(id: ID!): Todo
-    todos(assignee: ID, first: Int, offset: Int, desc: Boolean): [Todo]
+	todos(assignee: ID, first: Int, offset: Int, desc: Boolean): [Todo]
+	assignees: [Assignee]
   }
   
   type Mutation{
@@ -43,6 +44,9 @@ function getRandomId(){
 	
 const resolvers = {
   Query: {
+	assignees: (parent, args, context, info) =>{
+		return neo4jgraphql(parent, args, context, info)
+	},
 	todo: (parent, args, context, info) => {
 		return neo4jgraphql(parent, args, context, info)
 	},
