@@ -1,19 +1,18 @@
 const { ApolloServer, gql} = require('apollo-server');
-const { makeExecutableSchema } = require('graphql-tools');
-const { neo4jgraphql, cypherMutation } = require('neo4j-graphql-js');
+const { neo4jgraphql, cypherMutation, makeAugmentedSchema } = require('neo4j-graphql-js');
 const jwt = require('jsonwebtoken');
 const secret = require('./secret.js');
 
 // A schema is a collection of type definitions (hence "typeDefs")
 // that together define the "shape" of queries that are executed against
 // your data. @relation(name: "IS_ASSIGNED_TO", direction: "OUT")
-const typeDefs = gql`
+const typeDefs = `
   # Comments in GraphQL strings (such as this one) start with the hash (#) symbol.
 
   type Todo {
     id: ID!
     message: String
-    assignee: Assignee
+    assignee: Assignee @relation(name: "IS_ASSIGNED_TO", direction: "OUT")
   }
 
   type Assignee {
@@ -26,9 +25,9 @@ const typeDefs = gql`
 	todo(id: ID!): Todo
     todos(assignee: ID, first: Int, offset: Int, desc: Boolean): [Todo]
   }
-  
+
   type Mutation{
-	  login(userName: String!, pwd: String!): String! 
+	  login(userName: String!, pwd: String!): String!
 	  createTodo(message: String, assignee: ID!): Todo
 	  updateTodo(id: ID!, message: String): Todo
 	  deleteTodo(id: ID!): Todo
@@ -39,8 +38,8 @@ const typeDefs = gql`
 
 function getRandomId(){
 	return Math.floor(Math.random() * Math.floor(9999999)).toString();
-}	
-	
+}
+
 const resolvers = {
   Query: {
 	todo: (parent, args, context, info) => {
@@ -93,7 +92,7 @@ const resolvers = {
 			{
 				s: args.offset,
 				l: args.first
-			})			
+			})
 		}
 
 		session.close()
@@ -168,10 +167,10 @@ const resolvers = {
 };
 
 function getSchema(){
-	return makeExecutableSchema({
-		typeDefs: typeDefs,
-		resolvers: resolvers
-});
+  return makeAugmentedSchema({
+      typeDefs: typeDefs,
+      resolvers: resolvers
+    });
 }
 
 module.exports = getSchema;
