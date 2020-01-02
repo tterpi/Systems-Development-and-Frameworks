@@ -10,7 +10,7 @@ const factory = (values = {}) => {
 describe('ListItem', () => {
 	describe('Given none empty pet', () => {
 		const wrapper = factory({
-				pet: { id: '1', message: 'Hello', },
+				pet: { id: '1', name: 'Hello', },
 		})
 
 		it('Renders an edit button', () => {

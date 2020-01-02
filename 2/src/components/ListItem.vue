@@ -18,8 +18,8 @@ export default{
 	props : ['pet'],
 	data: function (){
 		return {
-			displayPet: !(this.pet.message === ""),
-			inputValue: this.pet.message
+			displayPet: !(this.pet.name === ""),
+			inputValue: this.pet.name
 		}
 	},
 	methods: {
@@ -32,7 +32,7 @@ export default{
 	}, 
 	computed: {
 		petString: function(){
-			return this.pet.id + ". " + this.pet.message + "; owner: " + this.pet.owner.name;
+			return this.pet.id + ". " + this.pet.name + "; owner: " + this.pet.owner.name;
 		}
 	}
 }

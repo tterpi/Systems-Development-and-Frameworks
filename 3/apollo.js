@@ -12,7 +12,7 @@ const typeDefs = gql`
 
   type Pet {
     id: ID!
-    message: String
+    name: String
     owner: Owner
   }
 
@@ -30,8 +30,8 @@ const typeDefs = gql`
   
   type Mutation{
 	  login(userName: String!, pwd: String!): String! 
-	  createPet(message: String, owner: ID!): Pet
-	  updatePet(id: ID!, message: String): Pet
+	  createPet(name: String, owner: ID!): Pet
+	  updatePet(id: ID!, name: String): Pet
 	  deletePet(id: ID!): Pet
 	  createOwner(name: String!, password: String!): Owner
 	  updateOwner(id: ID!, name: String!, password: String!): Owner
@@ -138,13 +138,13 @@ const resolvers = {
 		  try{
 		  result = await session.run(`
 		  MATCH (p:Person) WHERE p.id = $owner
-		  CREATE (t:Pet {id: $id, message: $message})
+		  CREATE (t:Pet {id: $id, name: $name})
 		  MERGE (t)-[:IS_ASSIGNED_TO]->(p)
 		  RETURN t, p
 		  `,
 		  {
 			id: getRandomId(),
-			message: args.message,
+			name: args.name,
 			owner: args.owner
 		  }
 		  )

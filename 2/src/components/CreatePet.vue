@@ -1,6 +1,6 @@
 <template>
 	<div>
-        <input placeholder="message" v-model="message"/>
+        <input placeholder="name" v-model="name"/>
         <select v-model="owner">
             <option disabled value="">owner</option>
             <option v-for="(person) in owners" v-bind:key="person.id" v-bind:value="person.id">
@@ -18,20 +18,20 @@ export default{
 	props : [],
 	data: function (){
 		return {
-			message: "",
+			name: "",
 			owner: ""
 		}
 	},
 	methods: {
 		createPet: async function (){
-            if(!this.message || !this.owner){
+            if(!this.name || !this.owner){
                 return
             }
             await this.$apollo.mutate({
                 mutation:gql`
-                mutation createPet($message: String, $owner: ID!){
-                    createPet(message: $message, owner: $owner){
-                        message
+                mutation createPet($name: String, $owner: ID!){
+                    createPet(name: $name, owner: $owner){
+                        name
                         owner{
                             name
                         }
@@ -39,12 +39,12 @@ export default{
                 }
                 `,
                 variables:{
-                    message: this.message,
+                    name: this.name,
                     owner: this.owner
                 }
             })
             this.$emit('pet-created');
-            this.message = ""
+            this.name = ""
             this.owner = ""
             //this.$apollo.queries.pets.refetch()
         }

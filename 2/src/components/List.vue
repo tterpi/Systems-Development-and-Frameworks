@@ -1,5 +1,6 @@
 <template>
 	<div>
+        <h2>Pet Hotel Database</h2>
         <Login/>
 		<ul>
 			<ListItem
@@ -7,7 +8,7 @@
 				v-bind:pet="item"
 				v-bind:key="item.id"
 				v-on:delete-pet="deletePet(item.id)"
-				v-on:save-pet="savePet({index: item.id, message: $event})"
+				v-on:save-pet="savePet({index: item.id, name: $event})"
                 v-on:create-pet="createPet($event)"
 			/>
 		</ul>
@@ -33,20 +34,20 @@ export default {
             await this.$apollo.mutate(
                 {
                     mutation: gql`
-                    mutation updatePet($id: ID!, $message: String){
-                        updatePet(id:$id, message:$message){
+                    mutation updatePet($id: ID!, $name: String){
+                        updatePet(id:$id, name:$name){
                             id
-                            message
+                            name
                         }
                     }
                 `,
                 variables: {
                     id: pet.index,
-                    message: pet.message
+                    name: pet.name
                 }
                 }
             )
-            //this.pets[pet.index].message = pet.message;
+            //this.pets[pet.index].name = pet.name;
         },
         deletePet: async function (index) {
             await this.$apollo.mutate({
@@ -54,7 +55,7 @@ export default {
                 mutation deletePet($id: ID!){
                     deletePet(id: $id){
                         id
-                        message
+                        name
                     }
                 }
                 `,
@@ -80,7 +81,7 @@ export default {
             query PetsQuery($owner: ID, $first: Int, $offset: Int){
                 pets(owner: $owner, first: $first, offset: $offset){
                     id
-                    message
+                    name
                     owner{
                         id
                         name

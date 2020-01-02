@@ -14,9 +14,9 @@ const loginMutation = gql`
 `;
 
 const createPetMutation = gql`
-	mutation createPet($message: String, $owner: ID!){
-		createPet(message: $message, owner: $owner){
-			message
+	mutation createPet($name: String, $owner: ID!){
+		createPet(name: $name, owner: $owner){
+			name
 			owner{
 				name
 			}
@@ -33,10 +33,10 @@ const createOwnerMutation = gql`
 `;
 
 const updatePetMutation = gql`
-	mutation updatePet($id: ID!, $message: String){
-		updatePet(id:$id, message:$message){
+	mutation updatePet($id: ID!, $name: String){
+		updatePet(id:$id, name:$name){
 			id
-			message
+			name
 		}
 	}
 `;
@@ -45,7 +45,7 @@ const getPetQuery = gql`
 	query getPet($id: ID!){
 		pet(id: $id){
 			id
-			message
+			name
 		}
 	}
 `;
@@ -54,7 +54,7 @@ const deletePetMutation = gql`
 	mutation deletePet($id: ID!){
 		deletePet(id: $id){
 			id
-			message
+			name
 		}
 	}
 `;
@@ -64,7 +64,7 @@ const petsQuery = gql`
 	query PetsQuery($owner: ID, $first: Int, $offset: Int){
 		pets(owner: $owner, first: $first, offset: $offset){
 			id
-			message
+			name
 			owner{
 				name
 			}
@@ -113,12 +113,12 @@ describe('User is logged in', ()=>{
 	it('creates a new pet', async ()=>{	
 		const result = await mutate({
 				mutation: createPetMutation,
-				variables: {message: "The new message", owner: '1'}
+				variables: {name: "The new name", owner: '1'}
 		});
 		console.log(result);
 		expect(result.data).toMatchObject({
 			"createPet":{
-				message: "The new message",
+				name: "The new name",
 				owner: {
 					name: "Hans"
 				}
@@ -130,7 +130,7 @@ describe('User is logged in', ()=>{
 		const result = await mutate(
 		{
 			mutation: updatePetMutation,
-			variables: {id: "2", message: "color me surprised"}
+			variables: {id: "2", name: "color me surprised"}
 		}
 		);
 		console.log(result);
@@ -138,7 +138,7 @@ describe('User is logged in', ()=>{
 			updatePet:
 			{
 				id: "2",
-				message: "color me surprised"
+				name: "color me surprised"
 			}
 		});
 	})
@@ -230,7 +230,7 @@ describe('User is not logged in', ()=>{
 			variables: {id: "2"}
 		}
 		);
-		expect(result.data.pet.message).toBe("Bar");
+		expect(result.data.pet.name).toBe("Bar");
 	})
 	
 	it('gets all pets with owner 1', async ()=>{
@@ -257,7 +257,7 @@ describe('User is not logged in', ()=>{
 	it('cannot create a new pet', async ()=>{	
 		const result = await mutate({
 				mutation: createPetMutation,
-				variables: {message: "The new message", owner: '1'}
+				variables: {name: "The new name", owner: '1'}
 		});
 		//console.log(result);
 		expect(result.error).not.toBe(null);

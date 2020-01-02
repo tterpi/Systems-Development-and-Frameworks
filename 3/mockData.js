@@ -9,10 +9,10 @@ const getOwners= ()=> [
     ];
 
 const getPets = ()=>[
-      { id: '1', message: 'Foo', owner: owners[0],},
-      { id: '2', message: 'Bar', owner: owners[1],},
-      { id: '3', message: 'Baz', owner: owners[0],},
-	  { id: '4', message: 'Baz', owner: owners[2],}
+      { id: '1', name: 'Foo', owner: owners[0],},
+      { id: '2', name: 'Bar', owner: owners[1],},
+      { id: '3', name: 'Baz', owner: owners[0],},
+	  { id: '4', name: 'Baz', owner: owners[2],}
     ];
 
 async function importDataToNeo4j(){
@@ -37,7 +37,7 @@ async function importDataToNeo4j(){
 		UNWIND $pets AS pet
 		MATCH (p:Owner {id: pet.owner.id})
 		MERGE (t:Pet {id: pet.id})
-		SET t.message = pet.message
+		SET t.name = pet.name
 		MERGE (t)-[:IS_ASSIGNED_TO]->(p)
 		RETURN t`
 		
