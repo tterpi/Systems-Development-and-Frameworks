@@ -3,16 +3,16 @@
         <Login/>
 		<ul>
 			<ListItem
-				v-for="(item) in todos"
-				v-bind:todo="item"
+				v-for="(item) in pets"
+				v-bind:pet="item"
 				v-bind:key="item.id"
-				v-on:delete-todo="deleteTodo(item.id)"
-				v-on:save-todo="saveTodo({index: item.id, message: $event})"
-                v-on:create-todo="createTodo($event)"
+				v-on:delete-pet="deletePet(item.id)"
+				v-on:save-pet="savePet({index: item.id, message: $event})"
+                v-on:create-pet="createPet($event)"
 			/>
 		</ul>
-		<CreateTodo
-            v-on:todo-created="refetch"
+		<CreatePet
+            v-on:pet-created="refetch"
         />
 	</div>
 </template>
@@ -20,39 +20,39 @@
 <script>
 import ListItem from './ListItem.vue'
 import Login from './Login.vue'
-import CreateTodo from './CreateTodo.vue'
+import CreatePet from './CreatePet.vue'
 import gql from 'graphql-tag'
 
 export default {
-    components: { ListItem, Login, CreateTodo },
+    components: { ListItem, Login, CreatePet },
     methods: {
         refetch: function(){
-            this.$apollo.queries.todos.refetch()
+            this.$apollo.queries.pets.refetch()
         },
-        saveTodo: async function (todo) {
+        savePet: async function (pet) {
             await this.$apollo.mutate(
                 {
                     mutation: gql`
-                    mutation updateTodo($id: ID!, $message: String){
-                        updateTodo(id:$id, message:$message){
+                    mutation updatePet($id: ID!, $message: String){
+                        updatePet(id:$id, message:$message){
                             id
                             message
                         }
                     }
                 `,
                 variables: {
-                    id: todo.index,
-                    message: todo.message
+                    id: pet.index,
+                    message: pet.message
                 }
                 }
             )
-            //this.todos[todo.index].message = todo.message;
+            //this.pets[pet.index].message = pet.message;
         },
-        deleteTodo: async function (index) {
+        deletePet: async function (index) {
             await this.$apollo.mutate({
                 mutation: gql`
-                mutation deleteTodo($id: ID!){
-                    deleteTodo(id: $id){
+                mutation deletePet($id: ID!){
+                    deletePet(id: $id){
                         id
                         message
                     }
@@ -62,8 +62,8 @@ export default {
                     id: index
                 }
             })
-            this.$apollo.queries.todos.refetch()
-            //this.todos.splice(index, 1);
+            this.$apollo.queries.pets.refetch()
+            //this.pets.splice(index, 1);
         },
         getNextId: function () {
             return this.nextId++;
@@ -71,17 +71,17 @@ export default {
     },
     created: function () {
         if (this.nextId === null) {
-            this.nextId = this.todos.length + 1;
+            this.nextId = this.pets.length + 1;
         }
     },
     apollo: {
-        todos: {
+        pets: {
             query: gql`
-            query TodosQuery($assignee: ID, $first: Int, $offset: Int){
-                todos(assignee: $assignee, first: $first, offset: $offset){
+            query PetsQuery($owner: ID, $first: Int, $offset: Int){
+                pets(owner: $owner, first: $first, offset: $offset){
                     id
                     message
-                    assignee{
+                    owner{
                         id
                         name
                     }
@@ -96,7 +96,7 @@ export default {
     },
     data: function () {
         return {
-            todos: [],
+            pets: [],
             nextId: null,
         }
     },

@@ -10,31 +10,31 @@ const secret = require('./secret.js');
 const typeDefs = gql`
   # Comments in GraphQL strings (such as this one) start with the hash (#) symbol.
 
-  type Todo {
+  type Pet {
     id: ID!
     message: String
-    assignee: Assignee
+    owner: Owner
   }
 
-  type Assignee {
+  type Owner {
     id: ID!
     name: String!
 	password: String!
   }
 
   type Query {
-	todo(id: ID!): Todo
-	todos(assignee: ID, first: Int, offset: Int, desc: Boolean): [Todo]
-	assignees: [Assignee]
+	pet(id: ID!): Pet
+	pets(owner: ID, first: Int, offset: Int, desc: Boolean): [Pet]
+	owners: [Owner]
   }
   
   type Mutation{
 	  login(userName: String!, pwd: String!): String! 
-	  createTodo(message: String, assignee: ID!): Todo
-	  updateTodo(id: ID!, message: String): Todo
-	  deleteTodo(id: ID!): Todo
-	  createAssignee(name: String!, password: String!): Assignee
-	  updateAssignee(id: ID!, name: String!, password: String!): Assignee
+	  createPet(message: String, owner: ID!): Pet
+	  updatePet(id: ID!, message: String): Pet
+	  deletePet(id: ID!): Pet
+	  createOwner(name: String!, password: String!): Owner
+	  updateOwner(id: ID!, name: String!, password: String!): Owner
   }
 `;
 
@@ -44,20 +44,20 @@ function getRandomId(){
 	
 const resolvers = {
   Query: {
-	assignees: (parent, args, context, info) =>{
+	owners: (parent, args, context, info) =>{
 		return neo4jgraphql(parent, args, context, info)
 	},
-	todo: (parent, args, context, info) => {
+	pet: (parent, args, context, info) => {
 		return neo4jgraphql(parent, args, context, info)
 	},
-    todos: async(parent, args, context, info) => {
+    pets: async(parent, args, context, info) => {
 		const session = context.driver.session()
 		let result
 		let query
 		try{
-			if(args.assignee != null){
+			if(args.owner != null){
 				query = `
-				MATCH (t:Todo)-[:IS_ASSIGNED_TO]->(p:Person {id: $assignee})
+				MATCH (t:Pet)-[:IS_ASSIGNED_TO]->(p:Person {id: $owner})
 				RETURN t, p
 				ORDER BY p.name
 				SKIP $s
@@ -65,7 +65,7 @@ const resolvers = {
 				`
 				if(args.desc == true){
 					query = `
-					MATCH (t:Todo)-[:IS_ASSIGNED_TO]->(p:Person {id: $assignee})
+					MATCH (t:Pet)-[:IS_ASSIGNED_TO]->(p:Person {id: $owner})
 					RETURN t, p
 					ORDER BY p.name DESC
 					SKIP $s
@@ -74,13 +74,13 @@ const resolvers = {
 				}
 				result = await session.run(query,
 					{
-						assignee: args.assignee,
+						owner: args.owner,
 						s: args.offset,
 						l: args.first
 					})
 			}else{
 				query = `
-				MATCH (t:Todo)-[:IS_ASSIGNED_TO]->(p:Person)
+				MATCH (t:Pet)-[:IS_ASSIGNED_TO]->(p:Person)
 				RETURN t, p
 				ORDER BY p.name
 				SKIP $s
@@ -88,7 +88,7 @@ const resolvers = {
 				`
 				if(args.desc == true){
 					query = `
-					MATCH (t:Todo)-[:IS_ASSIGNED_TO]->(p:Person)
+					MATCH (t:Pet)-[:IS_ASSIGNED_TO]->(p:Person)
 					RETURN t, p
 					ORDER BY p.name DESC
 					SKIP $s
@@ -108,7 +108,7 @@ const resolvers = {
 		}
 
 		return result.records.map((record) => {
-			let response = {...record.get('t').properties, assignee: record.get('p').properties}
+			let response = {...record.get('t').properties, owner: record.get('p').properties}
 			return response;
 		});
 	},
@@ -132,20 +132,20 @@ const resolvers = {
 			throw new Error("Incorrect username or password")
 		  }
 	  },
-	  createTodo: async (parent, args, context, info) => {
+	  createPet: async (parent, args, context, info) => {
 		  const session = context.driver.session()
 		  let result
 		  try{
 		  result = await session.run(`
-		  MATCH (p:Person) WHERE p.id = $assignee
-		  CREATE (t:Todo {id: $id, message: $message})
+		  MATCH (p:Person) WHERE p.id = $owner
+		  CREATE (t:Pet {id: $id, message: $message})
 		  MERGE (t)-[:IS_ASSIGNED_TO]->(p)
 		  RETURN t, p
 		  `,
 		  {
 			id: getRandomId(),
 			message: args.message,
-			assignee: args.assignee
+			owner: args.owner
 		  }
 		  )
 		}catch(e){
@@ -154,20 +154,20 @@ const resolvers = {
 			session.close();
 		}
 		  const record = result.records[0];
-		  return {...record.get('t').properties, assignee: record.get('p').properties};
+		  return {...record.get('t').properties, owner: record.get('p').properties};
 	  },
-	  deleteTodo: (parent, args, context, info) =>{
+	  deletePet: (parent, args, context, info) =>{
 		return neo4jgraphql(parent, args, context, info)
 	  },
-	  updateTodo: (parent, args, context, info) =>{
+	  updatePet: (parent, args, context, info) =>{
 		  return neo4jgraphql(parent, args, context, info)
 	  },
-	  createAssignee: async (parent, args, context, info) => {
+	  createOwner: async (parent, args, context, info) => {
 		  const session = context.driver.session()
 		  let result
 		  try{
 			  result = await session.run(`
-			  CREATE (p:Person:Assignee {id: $id, name: $name, password: $password})
+			  CREATE (p:Person:Owner {id: $id, name: $name, password: $password})
 			  RETURN p
 			  `,
 			  {
@@ -183,7 +183,7 @@ const resolvers = {
 		  }
 		  return result.records[0].get('p').properties;
 	  },
-	  updateAssignee: (parent, args, context, info) =>{
+	  updateOwner: (parent, args, context, info) =>{
 		  return neo4jgraphql(parent, args, context, info)
 	  },
   }

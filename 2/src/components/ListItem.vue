@@ -1,38 +1,38 @@
 <template>
 			<li>
-				<div v-if="displayTodo">
-					{{ todoString }}
-					<button class="editButton" v-on:click="displayTodo=false">Edit</button>
-					<button class="deleteButton" v-on:click="$emit('delete-todo')">Delete</button>
+				<div v-if="displayPet">
+					{{ petString }}
+					<button class="editButton" v-on:click="displayPet=false">Edit</button>
+					<button class="deleteButton" v-on:click="$emit('delete-pet')">Delete</button>
 				</div>
 				<div v-else>
-					<input placeholder="Enter todo" v-model="inputValue"/>
-					<button class="saveButton" v-on:click="saveTodo">Save</button>
-					<button class="cancelButton" v-on:click="displayTodo=true">Cancel</button>
+					<input placeholder="Enter pet" v-model="inputValue"/>
+					<button class="saveButton" v-on:click="savePet">Save</button>
+					<button class="cancelButton" v-on:click="displayPet=true">Cancel</button>
 				</div>
 			</li>
 </template>
 
 <script>
 export default{
-	props : ['todo'],
+	props : ['pet'],
 	data: function (){
 		return {
-			displayTodo: !(this.todo.message === ""),
-			inputValue: this.todo.message
+			displayPet: !(this.pet.message === ""),
+			inputValue: this.pet.message
 		}
 	},
 	methods: {
-		saveTodo: function(){
-			if(this.todo.id !== null){
-				this.$emit('save-todo', this.inputValue);
+		savePet: function(){
+			if(this.pet.id !== null){
+				this.$emit('save-pet', this.inputValue);
 			}
-			this.displayTodo = true;
+			this.displayPet = true;
 		}
 	}, 
 	computed: {
-		todoString: function(){
-			return this.todo.id + ". " + this.todo.message + "; assignee: " + this.todo.assignee.name;
+		petString: function(){
+			return this.pet.id + ". " + this.pet.message + "; owner: " + this.pet.owner.name;
 		}
 	}
 }

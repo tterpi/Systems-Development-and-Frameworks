@@ -22,7 +22,7 @@ backend.
 * Test-drive your implementation. As a first step, you can just write down the
   documentation, e.g.
    ```js
-   it.todo("behaves in a specified way")
+   it.pet("behaves in a specified way")
    ```
    will create a to-be-implemented test case with this description.
 * Pro tip: I run queries and mutations against an apollo server and check the
@@ -33,7 +33,7 @@ backend.
 * Be creative with your type definitions in your schema and have some custom
   types. You could e.g. implement CRUD operations for your types. 
 * If you want to connect your frontend with your backend (totally optional) it
-  would be wise if one of your types is a `Todo`.
+  would be wise if one of your types is a `Pet`.
 * Here is some inspiration: ![Test cases for CRUD operations](./crud.png)
 
 
@@ -43,7 +43,7 @@ backend.
 * Here is some inspiration how your test cases could look like:
   ![Test cases for a permission layer](./permissions.png)
 * Connect your frontend with your backend via [vue-apollo](https://github.com/vuejs/vue-apollo).
-  So if you update a todo in your frontend, it sends a graphql mutation to the
+  So if you update a pet in your frontend, it sends a graphql mutation to the
   backend.
 
 

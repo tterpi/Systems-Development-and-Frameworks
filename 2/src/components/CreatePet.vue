@@ -1,13 +1,13 @@
 <template>
 	<div>
         <input placeholder="message" v-model="message"/>
-        <select v-model="assignee">
-            <option disabled value="">assignee</option>
-            <option v-for="(person) in assignees" v-bind:key="person.id" v-bind:value="person.id">
+        <select v-model="owner">
+            <option disabled value="">owner</option>
+            <option v-for="(person) in owners" v-bind:key="person.id" v-bind:value="person.id">
                 {{ person.name }}
             </option>
         </select>
-		<button class="saveButton" v-on:click="createTodo">create todo</button>
+		<button class="saveButton" v-on:click="createPet">create pet</button>
 	</div>
 </template>
 
@@ -19,20 +19,20 @@ export default{
 	data: function (){
 		return {
 			message: "",
-			assignee: ""
+			owner: ""
 		}
 	},
 	methods: {
-		createTodo: async function (){
-            if(!this.message || !this.assignee){
+		createPet: async function (){
+            if(!this.message || !this.owner){
                 return
             }
             await this.$apollo.mutate({
                 mutation:gql`
-                mutation createTodo($message: String, $assignee: ID!){
-                    createTodo(message: $message, assignee: $assignee){
+                mutation createPet($message: String, $owner: ID!){
+                    createPet(message: $message, owner: $owner){
                         message
-                        assignee{
+                        owner{
                             name
                         }
                     }
@@ -40,19 +40,19 @@ export default{
                 `,
                 variables:{
                     message: this.message,
-                    assignee: this.assignee
+                    owner: this.owner
                 }
             })
-            this.$emit('todo-created');
+            this.$emit('pet-created');
             this.message = ""
-            this.assignee = ""
-            //this.$apollo.queries.todos.refetch()
+            this.owner = ""
+            //this.$apollo.queries.pets.refetch()
         }
     },
     apollo: {
-        assignees: {
+        owners: {
             query: gql`{
-                assignees{
+                owners{
                     id
                     name
                 }

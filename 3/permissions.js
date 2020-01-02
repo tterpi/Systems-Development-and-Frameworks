@@ -21,10 +21,10 @@ const isAuthenticated = rule()(async (parent, args, ctx, info) => {
 
 const permissions = shield({
   Mutation: {
-	createTodo: isAuthenticated,
-	updateTodo: isAuthenticated,
-	deleteTodo: isAuthenticated,
-	updateAssignee: isAuthenticated
+	createPet: isAuthenticated,
+	updatePet: isAuthenticated,
+	deletePet: isAuthenticated,
+	updateOwner: isAuthenticated
   },
 })
 
