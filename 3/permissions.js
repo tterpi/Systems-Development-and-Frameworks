@@ -7,7 +7,7 @@ const isAuthenticated = rule()(async (parent, args, ctx, info) => {
   var valid = false;
   try{
 	  let token = ctx.token
-	  if(token.startsWith('Bearer ')){
+	  if(token && token.startsWith('Bearer ')){
 		  token = token.slice(7, token.length).trimLeft();
 	  }
 	  var payload = jwt.verify(token, secret);

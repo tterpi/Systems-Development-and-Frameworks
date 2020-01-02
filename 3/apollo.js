@@ -53,54 +53,60 @@ const resolvers = {
     todos: async(parent, args, context, info) => {
 		const session = context.driver.session()
 		let result
-		if(args.assignee != null){
-			let query = `
-			MATCH (t:Todo)-[:IS_ASSIGNED_TO]->(p:Person {id: $assignee})
-			RETURN t, p
-			ORDER BY p.name
-			SKIP $s
-			LIMIT $l
-			`
-			if(args.desc == true){
+		let query
+		try{
+			if(args.assignee != null){
 				query = `
 				MATCH (t:Todo)-[:IS_ASSIGNED_TO]->(p:Person {id: $assignee})
 				RETURN t, p
-				ORDER BY p.name DESC
+				ORDER BY p.name
 				SKIP $s
 				LIMIT $l
 				`
-			}
-			result = await session.run(query,
-			{
-				assignee: args.assignee,
-				s: args.offset,
-				l: args.first
-			})
-		}else{
-			let query = `
-			MATCH (t:Todo)-[:IS_ASSIGNED_TO]->(p:Person)
-			RETURN t, p
-			ORDER BY p.name
-			SKIP $s
-			LIMIT $l
-			`
-			if(args.desc == true){
+				if(args.desc == true){
+					query = `
+					MATCH (t:Todo)-[:IS_ASSIGNED_TO]->(p:Person {id: $assignee})
+					RETURN t, p
+					ORDER BY p.name DESC
+					SKIP $s
+					LIMIT $l
+					`
+				}
+				result = await session.run(query,
+					{
+						assignee: args.assignee,
+						s: args.offset,
+						l: args.first
+					})
+			}else{
 				query = `
 				MATCH (t:Todo)-[:IS_ASSIGNED_TO]->(p:Person)
 				RETURN t, p
-				ORDER BY p.name DESC
+				ORDER BY p.name
 				SKIP $s
 				LIMIT $l
 				`
+				if(args.desc == true){
+					query = `
+					MATCH (t:Todo)-[:IS_ASSIGNED_TO]->(p:Person)
+					RETURN t, p
+					ORDER BY p.name DESC
+					SKIP $s
+					LIMIT $l
+					`
+				}
+				result = await session.run(query,
+				{
+					s: args.offset,
+					l: args.first
+				})			
 			}
-			result = await session.run(query,
-			{
-				s: args.offset,
-				l: args.first
-			})			
+		}catch(e){
+			console.log(e)
+		}finally{
+			session.close()
 		}
 
-		session.close()
 		return result.records.map((record) => {
 			let response = {...record.get('t').properties, assignee: record.get('p').properties}
 			return response;
@@ -121,14 +127,16 @@ const resolvers = {
 		  )
 		  const record = result.records[0];
 		  if(record){
-			  return jwt.sign({userName: args.userName, }, secret, {expiresIn: "1 day"});
+			return jwt.sign({userName: args.userName, }, secret, {expiresIn: "1 day"});
 		  }else{
-			  return ""
+			throw new Error("Incorrect username or password")
 		  }
 	  },
 	  createTodo: async (parent, args, context, info) => {
 		  const session = context.driver.session()
-		  const result = await session.run(`
+		  let result
+		  try{
+		  result = await session.run(`
 		  MATCH (p:Person) WHERE p.id = $assignee
 		  CREATE (t:Todo {id: $id, message: $message})
 		  MERGE (t)-[:IS_ASSIGNED_TO]->(p)
@@ -140,7 +148,11 @@ const resolvers = {
 			assignee: args.assignee
 		  }
 		  )
-		  session.close();
+		}catch(e){
+			console.log(e)
+		}finally{
+			session.close();
+		}
 		  const record = result.records[0];
 		  return {...record.get('t').properties, assignee: record.get('p').properties};
 	  },
@@ -152,17 +164,23 @@ const resolvers = {
 	  },
 	  createAssignee: async (parent, args, context, info) => {
 		  const session = context.driver.session()
-		  const result = await session.run(`
-		  CREATE (p:Person:Assignee {id: $id, name: $name, password: $password})
-		  RETURN p
-		  `,
-		  {
-			  id: getRandomId(),
-			  name: args.name,
-			  password: args.password
+		  let result
+		  try{
+			  result = await session.run(`
+			  CREATE (p:Person:Assignee {id: $id, name: $name, password: $password})
+			  RETURN p
+			  `,
+			  {
+				  id: getRandomId(),
+				  name: args.name,
+				  password: args.password
+			  }
+			  )
+		  }catch(e){
+			  console.log(e)
+		  }finally{
+			  session.close();
 		  }
-		  )
-		  session.close();
 		  return result.records[0].get('p').properties;
 	  },
 	  updateAssignee: (parent, args, context, info) =>{

@@ -72,6 +72,15 @@ const todosQuery = gql`
 	}
 `;
 
+const assigneesQuery = gql`
+	query{
+		assignees{
+			id
+			name
+		}
+	}
+`
+
 
 beforeAll(async()=>{
 	await cleanUpDataInNeo4j()
@@ -235,6 +244,15 @@ describe('User is not logged in', ()=>{
 		});
 		expect(result.data.todos.length).toBe(2);
 	});
+
+	it('gets all possible assignees', async ()=>{
+		const result = await query({
+			query: assigneesQuery
+		})
+
+		expect(result.data.assignees.length).toBe(3)
+		expect(result.data.assignees.map((assignee)=>assignee.name)).toContain('Hanna')
+	})
 	
 	it('cannot create a new todo', async ()=>{	
 		const result = await mutate({
