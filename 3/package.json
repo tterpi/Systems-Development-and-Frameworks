@@ -4,6 +4,8 @@
   "description": "Test-drive the development of a GraphQL server.",
   "main": "index.js",
   "scripts": {
+    "start": "node index.js",
+    "seed": "node script/seed.js",
     "test": "jest"
   },
   "keywords": [],

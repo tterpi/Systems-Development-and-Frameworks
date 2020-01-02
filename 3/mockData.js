@@ -49,6 +49,7 @@ async function importDataToNeo4j(){
 	//console.log(result);
 	
 	session.close()
+	driver.close()
 }
 
 async function cleanUpDataInNeo4j(){
