@@ -1,7 +1,5 @@
-const getNeo4jDriver = require("./neo4j.js");
 let assignees
 let todos
-let driver
 
 const getAssignees= ()=> [
       {id: '1', name: 'Hans', password: "1234"},
@@ -16,24 +14,23 @@ const getTodos = ()=>[
 	  { id: '4', message: 'Baz', assignee: assignees[2],}
     ];
 
-async function importDataToNeo4j(){
-	driver = getNeo4jDriver();
+async function importDataToNeo4j(driver){
 	const session = driver.session();
-	
+  try {
 	assignees = getAssignees()
 	todos = getTodos()
-	
+
 	const personCreationQuery = `
 		UNWIND $assignees AS assignee
 		MERGE (n:Person:Assignee {id: assignee.id, name: assignee.name, password: assignee.password})
 		RETURN n`
-	
+
 	let result = await session.run(personCreationQuery,
 	{
 		assignees: getAssignees()
 	})
 	//console.log(result);
-	
+
 	const todoCreationQuery = `
 		UNWIND $todos AS todo
 		MATCH (p:Assignee {id: todo.assignee.id})
@@ -41,25 +38,25 @@ async function importDataToNeo4j(){
 		SET t.message = todo.message
 		MERGE (t)-[:IS_ASSIGNED_TO]->(p)
 		RETURN t`
-		
+
 	result = await session.run(todoCreationQuery,
 	{
 		todos: getTodos()
 	})
 	//console.log(result);
-	
-	session.close()
-	driver.close()
+
+  } finally {
+    session.close()
+  }
 }
 
-async function cleanUpDataInNeo4j(){
+async function cleanUpDataInNeo4j(driver){
 	const session = driver.session()
+  try {
 	await session.run(`MATCH (n) DETACH DELETE n`)
+  } finally {
 	session.close()
+  }
 }
 
-async function closeDriver(){
-	await driver.close()
-}
-
-module.exports = {importDataToNeo4j, cleanUpDataInNeo4j, closeDriver}
+module.exports = {importDataToNeo4j, cleanUpDataInNeo4j }
