@@ -4,28 +4,17 @@ const permissions = require('./permissions.js');
 const { applyMiddleware } = require('graphql-middleware');
 const getNeo4jDriver = require("./neo4j.js");
 
-function getApolloServer(){
-	let schema = getSchema();
-	const schemaWithMiddleware = applyMiddleware(schema, permissions);
-	const server = new ApolloServer(
-	{
-		schema: schemaWithMiddleware,
-		context: ({req})=>{return {
-			token: req.headers.authorization,
-			driver: getNeo4jDriver()}}
-	});
-	return server;
+function getApolloServer(opts = {}){
+  const defaults = {
+		schema: applyMiddleware(getSchema(), permissions),
+    context: ({req}) => ({
+      token: req.headers.authorization,
+      driver: getNeo4jDriver()
+    })
+  }
+  opts = { ...defaults, ...opts }
+	return new ApolloServer(opts);
 }
 
-function getTestApolloServer(context){
-	const schema = getSchema();
-	const schemaWithMiddleware = applyMiddleware(schema, permissions);
-	const server = new ApolloServer({
-		schema: schemaWithMiddleware, 
-		context: ()=>{return {...context, driver: getNeo4jDriver()}}
-	});
-	return server;
-}
 
 module.exports.getApolloServer = getApolloServer;
-module.exports.getTestApolloServer = getTestApolloServer;
